@@ -1,0 +1,17 @@
+# --- Raw client data: contains visitor names, e-mails, phone numbers. NEVER commit. ---
+/Data/
+*.xlsx
+*.zip
+*.log
+
+# Only the aggregated, PII-free bundle (dashboard/data/dashboard-data.js) is committed.
+
+# Local tooling
+.claude/
+__pycache__/
+*.pyc
+.venv/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

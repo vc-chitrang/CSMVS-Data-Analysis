@@ -1,0 +1,89 @@
+# CI/CD for CSMVS Gallery Insights
+#  - CI  (every push & pull request): syntax checks + privacy/integrity gate on the data bundle.
+#  - CD  (push to main only):        publish the static dashboard/ folder to GitHub Pages.
+#
+# The raw Data/ folder is git-ignored (it holds visitor PII), so CI never rebuilds the
+# bundle. Refresh data locally with `python etl/build_data.py`, then commit
+# dashboard/data/dashboard-data.js - this workflow verifies and deploys it.
+name: CI / Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege by default; the deploy job elevates only what Pages needs.
+permissions:
+  contents: read
+
+# One deploy at a time; never cancel a production deploy mid-way.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify (lint + privacy gate)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Python syntax check
+        run: python -m py_compile etl/build_data.py etl/check_bundle.py serve.py
+
+      - name: JavaScript syntax check
+        run: node --check dashboard/app.js
+
+      - name: Privacy & integrity gate on data bundle
+        run: python etl/check_bundle.py
+
+      - name: Ensure no raw data files are tracked
+        run: |
+          if git ls-files | grep -Ei '(^Data/|\.xlsx$|\.zip$|\.log$)'; then
+            echo "::error::Raw data files are tracked in git - remove them (they may contain PII)."
+            exit 1
+          fi
+          echo "OK: no raw data tracked"
+
+      - name: Smoke test - serve and fetch the site
+        run: |
+          PORT=8080 python serve.py &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/ >/dev/null && break; sleep 0.5; done
+          curl -fsS http://127.0.0.1:8080/ | grep -q "CSMVS Gallery Insights"
+          curl -fsS http://127.0.0.1:8080/data/dashboard-data.js | head -c 40 | grep -q "window.DASHBOARD_DATA\|// Generated"
+          echo "OK: site serves"
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

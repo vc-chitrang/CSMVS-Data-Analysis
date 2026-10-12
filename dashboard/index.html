@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSMVS Insights</title>
+  <link rel="stylesheet" href="styles.css?v=8">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      <div>
+        <h1>CSMVS Gallery Insights</h1>
+        <p class="sub">Chhatrapati Shivaji Maharaj Vastu Sangrahalaya · interactive kiosks &amp; visitor feedback</p>
+      </div>
+    </div>
+    <button id="themeToggle" class="ghost" type="button" aria-label="Toggle dark mode">◐ Theme</button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+    <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+    <button role="tab" data-tab="route">Trade Route<span class="long"> kiosk</span></button>
+    <button role="tab" data-tab="wall"><span class="long">Interactive </span>Trade Wall</button>
+    <button role="tab" data-tab="feedback"><span class="long">Visitor </span>Feedback</button>
+    <button role="tab" data-tab="health">Data health</button>
+  </nav>
+
+  <main id="app">
+    <section id="tab-overview" class="tab" role="tabpanel"></section>
+    <section id="tab-route" class="tab" role="tabpanel" hidden></section>
+    <section id="tab-wall" class="tab" role="tabpanel" hidden></section>
+    <section id="tab-feedback" class="tab" role="tabpanel" hidden></section>
+    <section id="tab-health" class="tab" role="tabpanel" hidden></section>
+  </main>
+
+  <footer class="foot" id="foot"></footer>
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+
+  <!-- Data bundle produced by etl/build_data.py (plain script so file:// works) -->
+  <script src="data/dashboard-data.js?v=8"></script>
+  <script src="app.js?v=8"></script>
+</body>
+</html>
