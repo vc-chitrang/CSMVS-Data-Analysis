@@ -6,7 +6,7 @@ Single-page analytics dashboard for the **Chhatrapati Shivaji Maharaj Vastu Sang
 exhibition. It turns raw kiosk logs and visitor feedback forms into clear charts, key findings and
 recommended actions for the museum team.
 
-**Live site:** _set after first deploy — see [Deployment](#deployment)_
+**Live site:** https://vc-chitrang.github.io/CSMVS-Data-Analysis/
 
 ## What's inside
 
